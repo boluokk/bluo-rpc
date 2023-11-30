@@ -1,7 +1,10 @@
 package org.bluo.client;
 
+import cn.hutool.core.lang.UUID;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +15,8 @@ import org.bluo.common.RpcProtocol;
 import org.bluo.serialize.jackson.JacksonSerialize;
 
 import java.net.InetSocketAddress;
+
+import static org.bluo.cache.CachePool.resultCache;
 
 /**
  * 用户端
@@ -36,7 +41,7 @@ public class Client {
             protected void initChannel(NioSocketChannel channel) throws Exception {
                 channel.pipeline().addLast(new MessageEncoder());
                 channel.pipeline().addLast(new MessageDecoder());
-                channel.pipeline().addLast(new ChannelInboundHandler());
+                channel.pipeline().addLast(new ClientChannelInboundHandler());
             }
         });
         ChannelFuture channelFuture = bootstrap.connect(address).sync();
@@ -60,7 +65,9 @@ public class Client {
 
     public void test() {
         RpcProtocol rpcProtocol = new RpcProtocol();
+        String uuid = UUID.fastUUID().toString();
         RpcInvocation rpcInvocation = new RpcInvocation();
+        rpcInvocation.setUuid(uuid);
         rpcInvocation.setClassName("org.bluo.server.HelloService");
         rpcInvocation.setMethodName("hello");
         try {
@@ -68,6 +75,8 @@ public class Client {
             rpcProtocol.setContentLength(body.length);
             rpcProtocol.setContent(body);
             sendMessage(rpcProtocol);
+            Thread.sleep(1000);
+            System.out.println(resultCache.remove(uuid));
         } catch (Exception e) {
             e.printStackTrace();
         }

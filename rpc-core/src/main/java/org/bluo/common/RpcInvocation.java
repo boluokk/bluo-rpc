@@ -30,4 +30,8 @@ public class RpcInvocation {
      * 返回值
      */
     private Object result;
+    /**
+     * 唯一id
+     */
+    private String uuid;
 }
