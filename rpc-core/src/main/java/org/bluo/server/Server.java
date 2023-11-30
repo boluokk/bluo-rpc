@@ -1,9 +1,7 @@
 package org.bluo.server;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -23,8 +21,10 @@ import org.bluo.serialize.jackson.JacksonSerialize;
  */
 @Slf4j
 public class Server {
-    public static void main(String[] args) {
-        ServerBootstrap serverBootstrap = new ServerBootstrap();
+    private static final ServerBootstrap serverBootstrap = new ServerBootstrap();
+
+    public static void runServer() {
+        log.info("启动服务器中..");
         serverBootstrap.group(new NioEventLoopGroup());
         serverBootstrap.channel(NioServerSocketChannel.class);
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
@@ -47,6 +47,19 @@ public class Server {
                 });
             }
         });
-        serverBootstrap.bind(6636);
+        serverBootstrap.bind(6636).addListener(new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                if (channelFuture.isSuccess()) {
+                    log.info("服务器启动成功");
+                } else {
+                    log.error("服务器启动失败");
+                }
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        runServer();
     }
 }

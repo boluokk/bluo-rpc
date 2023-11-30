@@ -5,7 +5,7 @@ package org.bluo.serialize;
  * @date 2023/11/30
  */
 public interface Serialize {
-    public byte[] serialize(Object obj) throws Exception;
+    byte[] serialize(Object obj) throws Exception;
 
-    public <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception;
+    <T> T deserialize(byte[] bytes, Class<T> clazz) throws Exception;
 }
