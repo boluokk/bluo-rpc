@@ -1,10 +1,15 @@
 package org.bluo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.bluo.register.redis.config.RedisService;
+import org.bluo.common.ServiceWrapper;
+import org.bluo.register.redis.RedisRegister;
 import org.bluo.register.redis.config.RedisUtil;
 
-import java.util.Arrays;
+import java.awt.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Map;
 
 import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_KEY;
 
@@ -14,12 +19,15 @@ import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_KEY;
  */
 public class Test {
     public static void main(String[] args) throws JsonProcessingException {
+        try {
+            InetAddress localHost = InetAddress.getLocalHost();
+            String ipAddress = localHost.getHostAddress();
+            String hostName = localHost.getHostName();
 
-//        ArrayList<String> list = new ArrayList<>();
-//        list.add("127.0.0.1:5000");
-//        list.add("127.0.0.1:4000");
-//        list.add("127.0.0.1:3000");
-//        RedisUtil.set(REDIS_SERVICE_PREFIX_KEY, new RedisService(list));
-        System.out.println(RedisUtil.get(REDIS_SERVICE_PREFIX_KEY + "ww", RedisService.class));
+            System.out.println("IP Address: " + ipAddress);
+            System.out.println("Host Name: " + hostName);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 }

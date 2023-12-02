@@ -1,12 +1,15 @@
 package org.bluo.register.redis;
 
 import cn.hutool.core.util.ObjectUtil;
+import org.bluo.common.ServiceListWrapper;
+import org.bluo.common.ServiceWrapper;
 import org.bluo.register.SimpleRegisterAbstract;
-import org.bluo.register.redis.config.RedisService;
 import org.bluo.register.redis.config.RedisUtil;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION;
 import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_KEY;
@@ -21,32 +24,53 @@ import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_KEY;
 public class RedisRegister extends SimpleRegisterAbstract {
 
     @Override
-    public void register(String serviceName, String host, int port) {
+    public void register(String serviceName, ServiceWrapper serviceWrapper) {
         String key = REDIS_SERVICE_PREFIX_KEY + ":" + serviceName;
-        String value = host + ":" + port;
-        RedisService redisService = RedisUtil.get(key, RedisService.class);
-        if (ObjectUtil.isNotEmpty(redisService.getServices())) {
-            if (redisService.getServices().contains(value)) {
-                return;
+        ServiceListWrapper serviceMapWrapper = RedisUtil.get(key, ServiceListWrapper.class);
+        if (ObjectUtil.isNotEmpty(serviceMapWrapper.getValue())) {
+            List<ServiceWrapper> value = serviceMapWrapper.getValue();
+            for (int i = 0; i < value.size(); i++) {
+                ServiceWrapper cur = value.get(i);
+                if (cur.equals(serviceWrapper)) {
+                    return;
+                }
             }
-            redisService.getServices().add(value);
-            RedisUtil.setWithExpiration(key, redisService, REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
+            RedisUtil.setWithExpiration(key, serviceMapWrapper, REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
         } else {
-            Set<String> serviceList = new HashSet<>();
-            serviceList.add(value);
-            RedisUtil.setWithExpiration(key, new RedisService(serviceList), REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
+            ServiceListWrapper serviceListWrapper = new ServiceListWrapper();
+            ArrayList<ServiceWrapper> list = new ArrayList<>();
+            list.add(serviceWrapper);
+            serviceListWrapper.setValue(list);
+            RedisUtil.setWithExpiration(key, serviceListWrapper, REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
         }
     }
 
     @Override
-    public void unRegister(String serviceName, String host, int port) {
+    public void unRegister(String serviceName, ServiceWrapper serviceWrapper) {
         String key = REDIS_SERVICE_PREFIX_KEY + ":" + serviceName;
-        String value = host + ":" + port;
-        RedisService redisService = RedisUtil.get(key, RedisService.class);
-        if (ObjectUtil.isNotEmpty(redisService.getServices()) &&
-                redisService.getServices().contains(value)) {
-            redisService.getServices().remove(value);
-            RedisUtil.setWithExpiration(key, redisService, REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
+        ServiceListWrapper serviceListMapWrapper = RedisUtil.get(key, ServiceListWrapper.class);
+        if (ObjectUtil.isNotEmpty(serviceListMapWrapper.getValue())) {
+            List<ServiceWrapper> value = serviceListMapWrapper.getValue();
+            Iterator<ServiceWrapper> iterator = value.iterator();
+            while (iterator.hasNext()) {
+                ServiceWrapper next = iterator.next();
+                if (next.equals(serviceWrapper)) {
+                    iterator.remove();
+                }
+            }
+            if (serviceListMapWrapper.getValue().size() == 0) {
+                RedisUtil.delete(key);
+            } else {
+                RedisUtil.setWithExpiration(key, serviceListMapWrapper,
+                        REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
+            }
         }
+    }
+
+    @Override
+    public List<ServiceWrapper> getServices(String serviceName) {
+        String key = REDIS_SERVICE_PREFIX_KEY + ":" + serviceName;
+        Map<String, List<ServiceWrapper>> redisService = RedisUtil.get(key, Map.class);
+        return redisService.get("value");
     }
 }

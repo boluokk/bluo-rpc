@@ -9,7 +9,11 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.bluo.common.MessageDecoder;
 import org.bluo.common.MessageEncoder;
+import org.bluo.common.ServiceWrapper;
 import org.bluo.register.redis.RedisRegister;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 
 /**
@@ -22,6 +26,7 @@ import org.bluo.register.redis.RedisRegister;
 public class Server {
     private ServerBootstrap serverBootstrap = new ServerBootstrap();
     RedisRegister redisRegister = new RedisRegister();
+
     public ChannelFuture runServer() {
         log.info("启动服务器中..");
         serverBootstrap.group(new NioEventLoopGroup());
@@ -36,7 +41,10 @@ public class Server {
         });
         return serverBootstrap.bind(6636).addListener(channelFuture -> {
             if (channelFuture.isSuccess()) {
-                redisRegister.register("test", "127.0.0.1", 6636);
+                ServiceWrapper serviceWrapper = new ServiceWrapper();
+                serviceWrapper.setDomain("127.0.0.1");
+                serviceWrapper.setPort(6636);
+                redisRegister.register("test", serviceWrapper);
                 Runtime.getRuntime().addShutdownHook(new Thread(this::stopServer));
                 log.info("服务器启动成功");
             } else {
@@ -46,20 +54,16 @@ public class Server {
     }
 
     public void stopServer() {
-        serverBootstrap.config().group().shutdownGracefully();
-    }
-
-    public void stopPre(ChannelFuture serverChannelFuture) {
-        serverChannelFuture.channel().closeFuture().addListener(future -> {
-            if (future.isSuccess()) {
-                redisRegister.unRegister("test", "127.0.0.1", 6636);
-                log.info("服务器关闭成功");
-            }
-        });
+        ServiceWrapper serviceWrapper = new ServiceWrapper();
+        serviceWrapper.setDomain("127.0.0.1");
+        serviceWrapper.setPort(6636);
+        redisRegister.unRegister("test", serviceWrapper);
+        serverBootstrap.group().shutdownGracefully();
+        log.info("服务器关闭成功");
     }
 
     public static void main(String[] args) {
         Server server = new Server();
-        server.stopPre(server.runServer());
+        server.runServer();
     }
 }
