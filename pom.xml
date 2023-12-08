@@ -11,6 +11,7 @@
     <modules>
         <module>rpc-core</module>
         <module>api</module>
+        <module>rpc-service</module>
     </modules>
 
     <properties>
@@ -26,6 +27,8 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -34,5 +37,12 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

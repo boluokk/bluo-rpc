@@ -1,8 +1,6 @@
 package org.bluo.common;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * 服务信息

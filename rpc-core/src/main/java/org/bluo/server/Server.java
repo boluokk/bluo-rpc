@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bluo.common.MessageDecoder;
 import org.bluo.common.MessageEncoder;
 import org.bluo.common.ServiceWrapper;
+import org.bluo.register.Register;
 import org.bluo.register.redis.RedisRegister;
 
 import java.net.InetAddress;
@@ -25,7 +26,7 @@ import java.net.UnknownHostException;
 @Slf4j
 public class Server {
     private ServerBootstrap serverBootstrap = new ServerBootstrap();
-    RedisRegister redisRegister = new RedisRegister();
+    Register redisRegister = new RedisRegister();
 
     public ChannelFuture runServer() {
         log.info("启动服务器中..");

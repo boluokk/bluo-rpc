@@ -1,9 +1,9 @@
 package org.bluo.router;
 
+import org.bluo.common.ServiceWrapper;
 import org.bluo.register.Register;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author boluo
@@ -13,10 +13,10 @@ public interface Router {
     /**
      * 获取服务
      */
-    String select(List<String> services);
+    ServiceWrapper select(List<ServiceWrapper> services);
 
     /**
      * 刷新路由
      */
-    List<String> refresh(Register register, String serviceName);
+    List<ServiceWrapper> refresh(Register register, String serviceName);
 }

@@ -6,5 +6,5 @@ package org.bluo.annotation;
  * @author boluo
  * @date 2023/12/02
  */
-public @interface EnableRpcService {
+public @interface EnableRpcServer {
 }
