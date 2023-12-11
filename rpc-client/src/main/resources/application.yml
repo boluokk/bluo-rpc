@@ -1,0 +1,5 @@
+server:
+  port: 6623
+spring:
+  main:
+    banner-mode: off

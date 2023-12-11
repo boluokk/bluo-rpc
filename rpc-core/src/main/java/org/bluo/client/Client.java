@@ -1,13 +1,11 @@
 package org.bluo.client;
 
-import cn.hutool.core.lang.UUID;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.bluo.cache.CachePool;
 import org.bluo.common.MessageDecoder;
 import org.bluo.common.MessageEncoder;
 import org.bluo.common.RpcInvocation;
@@ -15,8 +13,7 @@ import org.bluo.common.RpcProtocol;
 import org.bluo.serialize.jackson.JacksonSerialize;
 
 import java.net.InetSocketAddress;
-
-import static org.bluo.cache.CachePool.resultCache;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 用户端
@@ -28,11 +25,7 @@ import static org.bluo.cache.CachePool.resultCache;
 public class Client {
     private static Bootstrap bootstrap = new Bootstrap();
 
-    public static ChannelFuture getChannelFuture() throws InterruptedException {
-        return connect(new InetSocketAddress("127.0.0.1", 6636));
-    }
-
-    private static ChannelFuture connect(InetSocketAddress address) throws InterruptedException {
+    static {
         bootstrap.group(new NioEventLoopGroup());
         bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         bootstrap.channel(NioSocketChannel.class);
@@ -44,41 +37,39 @@ public class Client {
                 channel.pipeline().addLast(new ClientChannelInboundHandler());
             }
         });
-        ChannelFuture channelFuture = bootstrap.connect(address).sync();
-        if (channelFuture.isSuccess()) {
-            log.debug("服务器连接成功: {} - {}", address.getHostName(), address.getPort());
-        } else {
-            log.debug("服务器连接失败: {} - {}", address.getHostName(), address.getPort());
-        }
-        return channelFuture;
     }
 
-    public static void sendMessage(RpcProtocol rpcProtocol) throws InterruptedException {
-        ChannelFuture channelFuture = getChannelFuture();
-        channelFuture.channel().writeAndFlush(rpcProtocol);
+    public static ChannelFuture getChannelFuture() throws InterruptedException {
+        return bootstrap.connect(new InetSocketAddress("127.0.0.1", 6636)).sync();
     }
 
-    public static void main(String[] args) {
-        Client client = new Client();
-        client.test();
-    }
-
-    public void test() {
+    public static CompletableFuture<Object> seedMessage(RpcInvocation rpcInvocation) {
+        Channel channel = null;
+        CompletableFuture<Object> future = new CompletableFuture<>();
         RpcProtocol rpcProtocol = new RpcProtocol();
-        String uuid = UUID.fastUUID().toString();
-        RpcInvocation rpcInvocation = new RpcInvocation();
-        rpcInvocation.setUuid(uuid);
-        rpcInvocation.setClassName("org.bluo.server.HelloService");
-        rpcInvocation.setMethodName("hello");
         try {
             byte[] body = new JacksonSerialize().serialize(rpcInvocation);
             rpcProtocol.setContentLength(body.length);
             rpcProtocol.setContent(body);
-            sendMessage(rpcProtocol);
-            Thread.sleep(1000);
-            System.out.println(resultCache.remove(uuid));
+            channel = getChannelFuture().channel();
+            CachePool.resultCache.put(rpcInvocation.getUuid(), future);
+            if (!channel.isActive()) {
+                bootstrap.group().shutdownGracefully();
+                return null;
+            }
+            channel.writeAndFlush(rpcProtocol).addListener((ChannelFutureListener) future1 -> {
+                if (future1.isSuccess()) {
+                    log.info(String.format("客户端发送消息: %s", rpcProtocol));
+                } else {
+                    future1.channel().close();
+                    future.completeExceptionally(future1.cause());
+                }
+            });
         } catch (Exception e) {
-            e.printStackTrace();
+            CachePool.resultCache.remove(rpcInvocation.getUuid());
+            log.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
+        return future;
     }
 }

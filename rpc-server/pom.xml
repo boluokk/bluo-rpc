@@ -6,7 +6,7 @@
         <artifactId>bluo-rpc</artifactId>
         <version>1.0.1</version>
     </parent>
-    <artifactId>rpc-service</artifactId>
+    <artifactId>rpc-server</artifactId>
     <name>rpc-service</name>
 
     <dependencies>

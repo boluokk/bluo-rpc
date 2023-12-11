@@ -3,8 +3,11 @@ package org.bluo.client;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.bluo.common.RpcInvocation;
+
+import java.util.concurrent.CompletableFuture;
 
 import static org.bluo.cache.CachePool.resultCache;
 
@@ -16,15 +19,16 @@ import static org.bluo.cache.CachePool.resultCache;
 public class ClientChannelInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        RpcInvocation data = (RpcInvocation) msg;
-        resultCache.put(data.getUuid(), data);
+        try {
+            RpcInvocation data = (RpcInvocation) msg;
+            ((CompletableFuture) resultCache.remove(data.getUuid())).complete(msg);
+        } finally {
+            ReferenceCountUtil.release(msg);
+        }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("客户端发生错误: ", cause);
-
-        super.exceptionCaught(ctx, cause);
         Channel channel = ctx.channel();
         channel.close().addListener(future -> {
             if (future.isSuccess()) {

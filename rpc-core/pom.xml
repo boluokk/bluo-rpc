@@ -62,5 +62,11 @@
             <artifactId>nacos-client</artifactId>
             <version>${nacos.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.bluo</groupId>
+            <artifactId>api</artifactId>
+            <version>1.0.1</version>
+        </dependency>
     </dependencies>
 </project>
