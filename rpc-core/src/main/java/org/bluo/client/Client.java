@@ -6,10 +6,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.bluo.cache.CachePool;
-import org.bluo.common.MessageDecoder;
-import org.bluo.common.MessageEncoder;
-import org.bluo.common.RpcInvocation;
-import org.bluo.common.RpcProtocol;
+import org.bluo.common.*;
 import org.bluo.serialize.jackson.JacksonSerialize;
 
 import java.net.InetSocketAddress;
@@ -39,11 +36,11 @@ public class Client {
         });
     }
 
-    public static ChannelFuture getChannelFuture() throws InterruptedException {
-        return bootstrap.connect(new InetSocketAddress("127.0.0.1", 6636)).sync();
+    public static ChannelFuture getChannelFuture(ServiceWrapper router) throws InterruptedException {
+        return bootstrap.connect(new InetSocketAddress(router.getDomain(), router.getPort())).sync();
     }
 
-    public static CompletableFuture<Object> seedMessage(RpcInvocation rpcInvocation) {
+    public static CompletableFuture<Object> seedMessage(ServiceWrapper router, RpcInvocation rpcInvocation) {
         Channel channel = null;
         CompletableFuture<Object> future = new CompletableFuture<>();
         RpcProtocol rpcProtocol = new RpcProtocol();
@@ -51,7 +48,7 @@ public class Client {
             byte[] body = new JacksonSerialize().serialize(rpcInvocation);
             rpcProtocol.setContentLength(body.length);
             rpcProtocol.setContent(body);
-            channel = getChannelFuture().channel();
+            channel = getChannelFuture(router).channel();
             CachePool.resultCache.put(rpcInvocation.getUuid(), future);
             if (!channel.isActive()) {
                 bootstrap.group().shutdownGracefully();
@@ -59,7 +56,7 @@ public class Client {
             }
             channel.writeAndFlush(rpcProtocol).addListener((ChannelFutureListener) future1 -> {
                 if (future1.isSuccess()) {
-                    log.info(String.format("客户端发送消息: %s", rpcProtocol));
+                    log.info(String.format("客户端发送消息: %s", rpcInvocation));
                 } else {
                     future1.channel().close();
                     future.completeExceptionally(future1.cause());

@@ -17,6 +17,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface RpcReference {
+    /**
+     * 远程服务名
+     */
+    String serviceName();
+
     /*
      * 负载均衡算法
      */
@@ -26,6 +31,7 @@ public @interface RpcReference {
      * 超时时间
      */
     long timeout() default 5000;
+
     /**
      * 版本号
      */

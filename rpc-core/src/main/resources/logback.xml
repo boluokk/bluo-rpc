@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration debug="false">
+<configuration debug="true">
     <!--控制台日志， 控制台输出 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
@@ -13,4 +13,10 @@
     <logger name="org.bluo" level="DEBUG">
         <appender-ref ref="STDOUT" />
     </logger>
+    <!--<logger name="org.springframework" level="DEBUG">-->
+    <!--    <appender-ref ref="STDOUT" />-->
+    <!--</logger>-->
+    <!--<logger name="org.springframework" level="ERROR">-->
+    <!--    <appender-ref ref="STDOUT" />-->
+    <!--</logger>-->
 </configuration>

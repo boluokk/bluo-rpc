@@ -1,6 +1,6 @@
 package org.bluo;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import java.util.Stack;
 
 /**
  * @author boluo
@@ -8,5 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 
 public class Test {
-
+    public static void main(String[] args) {
+    }
 }

@@ -18,7 +18,7 @@ public class ServerChannelInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
-            log.debug("获取到数据: {}", msg);
+            log.info("获取到数据: {}", msg);
             RpcInvocation rpcInvocation = (RpcInvocation) msg;
             rpcInvocation.setResult("ok");
             byte[] serialize = new JacksonSerialize().serialize(rpcInvocation);

@@ -9,14 +9,14 @@ import redis.clients.jedis.Jedis;
  */
 @Slf4j
 public class RedisUtil {
-    private static final String REDIS_HOST = "localhost";
-    private static final int REDIS_PORT = 6379;
-    private static final String PASSWORD = "123456";
-    private static final Jedis jedis;
+    private static Jedis jedis;
 
-    static {
-        jedis = new Jedis(REDIS_HOST, REDIS_PORT);
-        jedis.auth(PASSWORD);
+    public RedisUtil(String host, int port, String password) {
+        jedis = new Jedis(host, port);
+        jedis.auth(password);
+    }
+
+    public RedisUtil() {
     }
 
     public static void set(String key, Object value) {

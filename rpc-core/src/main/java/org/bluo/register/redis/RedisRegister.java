@@ -3,13 +3,13 @@ package org.bluo.register.redis;
 import cn.hutool.core.util.ObjectUtil;
 import org.bluo.common.ServiceListWrapper;
 import org.bluo.common.ServiceWrapper;
+import org.bluo.properties.CommonProperties;
 import org.bluo.register.SimpleRegisterAbstract;
 import org.bluo.register.redis.config.RedisUtil;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION;
 import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_KEY;
@@ -23,6 +23,15 @@ import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_KEY;
 @SuppressWarnings("ConstantConditions")
 public class RedisRegister extends SimpleRegisterAbstract {
 
+    private RedisUtil redisUtil;
+
+    public RedisRegister(CommonProperties commonProperties) {
+        super(commonProperties);
+        redisUtil = new RedisUtil(commonProperties.getRedisUrl(),
+                commonProperties.getRedisPort(), commonProperties.getRedisPassword());
+    }
+
+
     @Override
     public void register(String serviceName, ServiceWrapper serviceWrapper) {
         String key = REDIS_SERVICE_PREFIX_KEY + ":" + serviceName;
@@ -35,6 +44,7 @@ public class RedisRegister extends SimpleRegisterAbstract {
                     return;
                 }
             }
+            value.add(serviceWrapper);
             RedisUtil.setWithExpiration(key, serviceMapWrapper, REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
         } else {
             ServiceListWrapper serviceListWrapper = new ServiceListWrapper();
@@ -70,7 +80,7 @@ public class RedisRegister extends SimpleRegisterAbstract {
     @Override
     public List<ServiceWrapper> getServices(String serviceName) {
         String key = REDIS_SERVICE_PREFIX_KEY + ":" + serviceName;
-        Map<String, List<ServiceWrapper>> redisService = RedisUtil.get(key, Map.class);
-        return redisService.get("value");
+        ServiceListWrapper listWrapper = RedisUtil.get(key, ServiceListWrapper.class);
+        return listWrapper.getValue();
     }
 }

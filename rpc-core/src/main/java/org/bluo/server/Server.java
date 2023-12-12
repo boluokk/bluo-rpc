@@ -10,11 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.bluo.common.MessageDecoder;
 import org.bluo.common.MessageEncoder;
 import org.bluo.common.ServiceWrapper;
+import org.bluo.properties.CommonProperties;
 import org.bluo.register.Register;
 import org.bluo.register.redis.RedisRegister;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 
 /**
@@ -26,7 +24,16 @@ import java.net.UnknownHostException;
 @Slf4j
 public class Server {
     private ServerBootstrap serverBootstrap = new ServerBootstrap();
-    Register redisRegister = new RedisRegister();
+    private static CommonProperties commonProperties;
+
+    static {
+        commonProperties = new CommonProperties();
+        commonProperties.setRedisPassword("123456");
+        commonProperties.setRedisUrl("127.0.0.1");
+        commonProperties.setRedisPort(6379);
+    }
+
+    private Register redisRegister = new RedisRegister(commonProperties);
 
     public ChannelFuture runServer() {
         log.info("启动服务器中..");
@@ -45,6 +52,8 @@ public class Server {
                 ServiceWrapper serviceWrapper = new ServiceWrapper();
                 serviceWrapper.setDomain("127.0.0.1");
                 serviceWrapper.setPort(6636);
+                redisRegister.register("test", serviceWrapper);
+                serviceWrapper.setPort(6637);
                 redisRegister.register("test", serviceWrapper);
                 Runtime.getRuntime().addShutdownHook(new Thread(this::stopServer));
                 log.info("服务器启动成功");

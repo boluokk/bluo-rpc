@@ -2,6 +2,8 @@ package org.bluo.common;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * 服务信息
  *
@@ -9,7 +11,7 @@ import lombok.Data;
  * @date 2023/12/02
  */
 @Data
-public class ServiceWrapper {
+public class ServiceWrapper implements Serializable {
     private String domain;
     private int port;
 
