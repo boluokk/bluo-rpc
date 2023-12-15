@@ -3,7 +3,7 @@ package org.bluo.common;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import org.bluo.serialize.jackson.JacksonSerialize;
+import org.bluo.serializer.Serializer;
 
 import java.util.List;
 
@@ -20,6 +20,8 @@ public class MessageDecoder extends ByteToMessageDecoder {
      * 基本长度 = 魔数 + 内容长度
      */
     private static final int BASE_LENGTH = Short.BYTES + Integer.BYTES;
+
+    private Serializer serializer;
 
     @Override
     protected void decode(ChannelHandlerContext ctx,
@@ -40,7 +42,11 @@ public class MessageDecoder extends ByteToMessageDecoder {
             // 读取内容
             byte[] body = new byte[length];
             byteBuf.readBytes(body);
-            list.add(new JacksonSerialize().deserialize(body, RpcInvocation.class));
+            list.add(serializer.deserialize(body, RpcInvocation.class));
         }
+    }
+
+    public MessageDecoder(Serializer serializer) {
+        this.serializer = serializer;
     }
 }

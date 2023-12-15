@@ -27,31 +27,29 @@ public class ClientProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String uuid = UUID.fastUUID().toString();
-        RpcInvocation rpcInvocation =
-                new RpcInvocation(method.getDeclaringClass().getName(), method.getName(), args, null, uuid);
+        RpcInvocation rpcInvocation = new RpcInvocation(method.getDeclaringClass().getName(),
+                method.getName(), args, null, uuid, null);
         // 过滤器
         ClientFilterChain.doFilter(rpcInvocation);
         // 获取服务 -> 每次都会去拿一下?
         List<ServiceWrapper> services = ClientCache.register.getServices(serviceName);
         // 负载均衡-路由
         if (ObjectUtil.isEmpty(services)) {
-            throw new RuntimeException("未找到路由信息, 请确认服务已经注册");
+            log.error("未找到路由信息, 请确认服务已经注册");
+            throw new Exception("未找到路由信息, 请确认服务已经注册");
         }
         ServiceWrapper select = ClientCache.router.select(services);
         log.info("服务：{} - {}", select.getDomain(), select.getPort());
         Object result = null;
-        int count = 3;
+        int count = ClientCache.clientConfig.getRetryTimes();
         while (--count > 0) {
             try {
                 CompletableFuture<Object> completableFuture = Client.seedMessage(select, rpcInvocation);
-                assert completableFuture != null;
                 result = completableFuture.get();
             } catch (Throwable e) {
                 log.warn("发送失败：{} - {}", e.getMessage(), e.getClass());
             }
         }
-        assert result != null;
-
         return ((RpcInvocation) result).getResult();
     }
 

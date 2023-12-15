@@ -16,9 +16,14 @@ public class ServerFilterChain {
         filters.add(serverFilter);
     }
 
-    public static void doFilter(RpcInvocation rpcInvocation) {
+    public static void doBeforeFilter(RpcInvocation rpcInvocation) {
         for (ServerFilter filter : filters) {
             filter.doFilter(rpcInvocation);
+        }
+    }
+
+    public static void doAfterFilter(RpcInvocation rpcInvocation) {
+        for (ServerFilter filter : filters) {
         }
     }
 }

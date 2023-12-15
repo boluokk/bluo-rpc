@@ -5,6 +5,7 @@ import org.bluo.annotation.RpcReference;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -14,6 +15,7 @@ import java.lang.reflect.Proxy;
  * @date 2023/12/08
  */
 @Configuration
+@Import(Client.class)
 @Slf4j
 public class ClientInjectHandler implements BeanPostProcessor {
 

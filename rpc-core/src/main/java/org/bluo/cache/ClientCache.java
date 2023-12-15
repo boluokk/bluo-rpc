@@ -3,7 +3,7 @@ package org.bluo.cache;
 import org.bluo.config.ClientConfig;
 import org.bluo.register.Register;
 import org.bluo.router.Router;
-import org.bluo.serialize.Serialize;
+import org.bluo.serializer.Serializer;
 
 /**
  * @author boluo
@@ -11,7 +11,7 @@ import org.bluo.serialize.Serialize;
  */
 public class ClientCache {
     public static Router router;
-    public static Serialize serialize;
+    public static Serializer serializer;
     public static Register register;
     public static ClientConfig clientConfig;
 }

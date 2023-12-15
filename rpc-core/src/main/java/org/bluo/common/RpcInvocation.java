@@ -34,4 +34,8 @@ public class RpcInvocation {
      * 唯一id
      */
     private String uuid;
+    /**
+     * 服务器异常信息
+     */
+    private Throwable ex;
 }

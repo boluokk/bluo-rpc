@@ -14,4 +14,5 @@ public class ServerConfig {
     private String applicationName;
     private String serverSerialize;
     private String registerPassword;
+    private String packageName;
 }

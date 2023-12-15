@@ -15,7 +15,7 @@ import org.bluo.common.ServiceWrapper;
 import org.bluo.config.ConfigLoader;
 import org.bluo.config.ServerConfig;
 import org.bluo.register.Register;
-import org.bluo.serialize.Serialize;
+import org.bluo.serializer.Serializer;
 import org.bluo.spi.ExtraLoader;
 
 import java.util.LinkedHashMap;
@@ -43,12 +43,12 @@ public class Server {
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel channel) throws Exception {
-                channel.pipeline().addLast(new MessageDecoder());
+                channel.pipeline().addLast(new MessageDecoder(ServerCache.serializer));
                 channel.pipeline().addLast(new MessageEncoder());
                 channel.pipeline().addLast(new ServerChannelInboundHandler());
             }
         });
-        return serverBootstrap.bind(6636).addListener(channelFuture -> {
+        return serverBootstrap.bind(serverConfig.getServerPort()).addListener(channelFuture -> {
             if (channelFuture.isSuccess()) {
                 ServiceWrapper serviceWrapper = new ServiceWrapper();
                 serviceWrapper.setPort(serverConfig.getServerPort());
@@ -75,10 +75,10 @@ public class Server {
         // 加载扩展类
         try {
             ServerConfig serverConfig = ConfigLoader.loadServerProperties();
-            extraLoader.loadExtension(Serialize.class);
+            extraLoader.loadExtension(Serializer.class);
             extraLoader.loadExtension(Register.class);
             LinkedHashMap<String, Class> registerClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Register.class.getName());
-            LinkedHashMap<String, Class> serializeClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Serialize.class.getName());
+            LinkedHashMap<String, Class> serializeClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Serializer.class.getName());
 
             // 注册中心
             Class regCls = registerClass.get(serverConfig.getRegisterType());
@@ -91,7 +91,7 @@ public class Server {
             if (ObjectUtil.isEmpty(serCls)) {
                 throw new RuntimeException("序列化类型不存在");
             }
-            ServerCache.serialize = (Serialize) serCls.newInstance();
+            ServerCache.serializer = (Serializer) serCls.newInstance();
             ServerCache.serverConfig = serverConfig;
         } catch (Exception e) {
             log.error("加载扩展类失败", e);

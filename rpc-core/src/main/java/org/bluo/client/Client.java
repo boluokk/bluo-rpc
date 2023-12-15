@@ -13,8 +13,7 @@ import org.bluo.config.ClientConfig;
 import org.bluo.config.ConfigLoader;
 import org.bluo.register.Register;
 import org.bluo.router.Router;
-import org.bluo.serialize.Serialize;
-import org.bluo.serialize.jackson.JacksonSerialize;
+import org.bluo.serializer.Serializer;
 import org.bluo.spi.ExtraLoader;
 
 import java.net.InetSocketAddress;
@@ -34,6 +33,7 @@ public class Client {
     private static Bootstrap bootstrap = new Bootstrap();
 
     static {
+        initConfiguration();
         bootstrap.group(new NioEventLoopGroup());
         bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         bootstrap.channel(NioSocketChannel.class);
@@ -41,11 +41,10 @@ public class Client {
             @Override
             protected void initChannel(NioSocketChannel channel) throws Exception {
                 channel.pipeline().addLast(new MessageEncoder());
-                channel.pipeline().addLast(new MessageDecoder());
+                channel.pipeline().addLast(new MessageDecoder(ClientCache.serializer));
                 channel.pipeline().addLast(new ClientChannelInboundHandler());
             }
         });
-        initConfiguration();
     }
 
     public static void initConfiguration() {
@@ -53,10 +52,10 @@ public class Client {
         try {
             ClientConfig clientConfig = ConfigLoader.loadClientProperties();
             extraLoader.loadExtension(Register.class);
-            extraLoader.loadExtension(Serialize.class);
+            extraLoader.loadExtension(Serializer.class);
             extraLoader.loadExtension(Router.class);
             LinkedHashMap<String, Class> registerClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Register.class.getName());
-            LinkedHashMap<String, Class> serializeClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Serialize.class.getName());
+            LinkedHashMap<String, Class> serializeClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Serializer.class.getName());
             LinkedHashMap<String, Class> routerClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Router.class.getName());
 
             // 注册中心
@@ -64,13 +63,15 @@ public class Client {
             if (ObjectUtil.isEmpty(regCls)) {
                 throw new RuntimeException("注册中心类型不存在");
             }
-            ClientCache.register = (Register) regCls.newInstance();
+            ClientCache.register = (Register) regCls.getConstructor(String.class, String.class)
+                    .newInstance(clientConfig.getRegisterAddress(),
+                            clientConfig.getRegisterPassword());
             // 序列化
             Class serCls = serializeClass.get(clientConfig.getClientSerialize());
             if (ObjectUtil.isEmpty(serCls)) {
                 throw new RuntimeException("序列化类型不存在");
             }
-            ClientCache.serialize = (Serialize) serCls.newInstance();
+            ClientCache.serializer = (Serializer) serCls.newInstance();
             // 负载均衡
             Class routerCls = routerClass.get(clientConfig.getRouterType());
             if (ObjectUtil.isEmpty(routerCls)) {
@@ -92,11 +93,11 @@ public class Client {
         CompletableFuture<Object> future = new CompletableFuture<>();
         RpcProtocol rpcProtocol = new RpcProtocol();
         try {
-            byte[] body = new JacksonSerialize().serialize(rpcInvocation);
+            byte[] body = ClientCache.serializer.serialize(rpcInvocation);
             rpcProtocol.setContentLength(body.length);
             rpcProtocol.setContent(body);
             channel = getChannelFuture(router).channel();
-            CachePool.resultCache.put(rpcInvocation.getUuid(), future);
+            CachePool.RESULT_CACHE.put(rpcInvocation.getUuid(), future);
             if (!channel.isActive()) {
                 bootstrap.group().shutdownGracefully();
                 return null;
@@ -110,7 +111,7 @@ public class Client {
                 }
             });
         } catch (Exception e) {
-            CachePool.resultCache.remove(rpcInvocation.getUuid());
+            CachePool.RESULT_CACHE.remove(rpcInvocation.getUuid());
             log.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
         }

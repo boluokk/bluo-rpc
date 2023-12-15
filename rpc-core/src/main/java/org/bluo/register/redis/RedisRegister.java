@@ -28,6 +28,8 @@ public class RedisRegister extends SimpleRegisterAbstract {
         redisUtil = new RedisUtil(url, password);
     }
 
+    public RedisRegister() {
+    }
 
     @Override
     public void register(String serviceName, ServiceWrapper serviceWrapper) {

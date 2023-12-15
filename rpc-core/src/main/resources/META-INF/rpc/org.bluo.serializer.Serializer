@@ -1,0 +1,1 @@
+jackson=org.bluo.serializer.jackson.JacksonSerializer

@@ -1,5 +1,7 @@
 package org.bluo.config;
 
+import java.io.IOException;
+
 /**
  * @author boluo
  * @date 2023/12/15
@@ -16,9 +18,11 @@ public class ConfigLoader {
     private static final String retryTime = prefix + "retryTime";
     private static final String retryInterval = prefix + "retryInterval";
     private static final String registerPassword = prefix + "registerPassword";
+    private static final String packageName = prefix + "packageName";
 
-    public static ClientConfig loadClientProperties() {
+    public static ClientConfig loadClientProperties() throws IOException {
         ClientConfig clientConfig = new ClientConfig();
+        PropertiesLoader.loadConfiguration();
         clientConfig.setApplicationName(PropertiesLoader.getPropertiesStrDefault(applicationName, "rpc-client"));
         clientConfig.setClientSerialize(PropertiesLoader.getPropertiesStrDefault(serialize, "jackson"));
         clientConfig.setRegisterAddress(PropertiesLoader.getPropertiesStrDefault(registerAddr, "127.0.0.1:6379"));
@@ -30,14 +34,16 @@ public class ConfigLoader {
         return clientConfig;
     }
 
-    public static ServerConfig loadServerProperties() {
+    public static ServerConfig loadServerProperties() throws IOException {
         ServerConfig serverConfig = new ServerConfig();
+        PropertiesLoader.loadConfiguration();
         serverConfig.setServerPort(Integer.valueOf(PropertiesLoader.getPropertiesStrDefault(port, "8080")));
         serverConfig.setApplicationName(PropertiesLoader.getPropertiesStrDefault(applicationName, "rpc-server"));
         serverConfig.setServerSerialize(PropertiesLoader.getPropertiesStrDefault(serialize, "jackson"));
         serverConfig.setRegisterAddress(PropertiesLoader.getPropertiesStrDefault(registerAddr, "127.0.0.1:6379"));
         serverConfig.setRegisterType(PropertiesLoader.getPropertiesStrDefault(registerType, "redis"));
         serverConfig.setRegisterPassword(PropertiesLoader.getPropertiesStrDefault(registerPassword, "123456"));
+        serverConfig.setPackageName(PropertiesLoader.getPropertiesStrDefault(packageName, "org.bluo.api"));
         return serverConfig;
     }
 }

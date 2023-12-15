@@ -12,7 +12,8 @@ public class RedisUtil {
     private static Jedis jedis;
 
     public RedisUtil(String url, String password) {
-        jedis = new Jedis(url);
+        String[] split = url.split(":");
+        jedis = new Jedis(split[0], Integer.parseInt(split[1]));
         jedis.auth(password);
     }
 

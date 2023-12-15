@@ -1,6 +1,7 @@
 package org.bluo.api;
 
 import org.bluo.annotation.RpcService;
+import org.springframework.stereotype.Service;
 
 /**
  * @author boluo
@@ -8,9 +9,10 @@ import org.bluo.annotation.RpcService;
  */
 
 @RpcService
+@Service
 public class MessageServiceImpl implements MessageService {
     @Override
     public String getMessage(String message) {
-        return null;
+        return "apple shopping";
     }
 }

@@ -13,10 +13,10 @@
     <logger name="org.bluo" level="DEBUG">
         <appender-ref ref="STDOUT" />
     </logger>
-    <!--<logger name="org.springframework" level="DEBUG">-->
-    <!--    <appender-ref ref="STDOUT" />-->
-    <!--</logger>-->
-    <!--<logger name="org.springframework" level="ERROR">-->
-    <!--    <appender-ref ref="STDOUT" />-->
-    <!--</logger>-->
+    <logger name="org.springframework" level="DEBUG">
+        <appender-ref ref="STDOUT" />
+    </logger>
+    <logger name="org.springframework" level="ERROR">
+        <appender-ref ref="STDOUT" />
+    </logger>
 </configuration>

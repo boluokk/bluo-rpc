@@ -3,7 +3,3 @@ server:
 spring:
   main:
     banner-mode: off
-
-rpc:
-  redis:
-    password: 123456

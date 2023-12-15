@@ -9,7 +9,7 @@ import org.bluo.common.RpcInvocation;
 
 import java.util.concurrent.CompletableFuture;
 
-import static org.bluo.cache.CachePool.resultCache;
+import static org.bluo.cache.CachePool.RESULT_CACHE;
 
 /**
  * @author boluo
@@ -21,7 +21,7 @@ public class ClientChannelInboundHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
             RpcInvocation data = (RpcInvocation) msg;
-            ((CompletableFuture) resultCache.remove(data.getUuid())).complete(msg);
+            ((CompletableFuture) RESULT_CACHE.remove(data.getUuid())).complete(msg);
         } finally {
             ReferenceCountUtil.release(msg);
         }
