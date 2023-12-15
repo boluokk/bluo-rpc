@@ -1,7 +1,5 @@
 package org.bluo.annotation;
 
-import org.bluo.router.random.RandomRouter;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,11 +19,6 @@ public @interface RpcReference {
      * 远程服务名
      */
     String serviceName();
-
-    /*
-     * 负载均衡算法
-     */
-    Class<?> router() default RandomRouter.class;
 
     /**
      * 超时时间

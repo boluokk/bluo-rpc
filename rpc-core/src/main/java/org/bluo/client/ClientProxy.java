@@ -3,11 +3,10 @@ package org.bluo.client;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.bluo.cache.ClientCache;
 import org.bluo.common.RpcInvocation;
 import org.bluo.common.ServiceWrapper;
 import org.bluo.filter.client.ClientFilterChain;
-import org.bluo.register.Register;
-import org.bluo.router.Router;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -23,11 +22,7 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class ClientProxy implements InvocationHandler {
 
-    private final Register register;
-
     private final String serviceName;
-
-    private final Router router;
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -37,12 +32,12 @@ public class ClientProxy implements InvocationHandler {
         // 过滤器
         ClientFilterChain.doFilter(rpcInvocation);
         // 获取服务 -> 每次都会去拿一下?
-        List<ServiceWrapper> services = register.getServices(serviceName);
+        List<ServiceWrapper> services = ClientCache.register.getServices(serviceName);
         // 负载均衡-路由
         if (ObjectUtil.isEmpty(services)) {
             throw new RuntimeException("未找到路由信息, 请确认服务已经注册");
         }
-        ServiceWrapper select = router.select(services);
+        ServiceWrapper select = ClientCache.router.select(services);
         log.info("服务：{} - {}", select.getDomain(), select.getPort());
         Object result = null;
         int count = 3;
@@ -56,12 +51,11 @@ public class ClientProxy implements InvocationHandler {
             }
         }
         assert result != null;
+
         return ((RpcInvocation) result).getResult();
     }
 
-    public ClientProxy(Register register, String serviceName, Router router) {
+    public ClientProxy(String serviceName) {
         this.serviceName = serviceName;
-        this.router = router;
-        this.register = register;
     }
 }

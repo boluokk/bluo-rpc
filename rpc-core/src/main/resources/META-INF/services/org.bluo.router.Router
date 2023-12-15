@@ -1,0 +1,3 @@
+random=org.bluo.router.random.RandomRouter
+round=org.bluo.router.round.RoundRouter
+consistHash=org.bluo.router.hash.ConsistentHashRouter

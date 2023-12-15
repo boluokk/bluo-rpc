@@ -11,8 +11,8 @@ import redis.clients.jedis.Jedis;
 public class RedisUtil {
     private static Jedis jedis;
 
-    public RedisUtil(String host, int port, String password) {
-        jedis = new Jedis(host, port);
+    public RedisUtil(String url, String password) {
+        jedis = new Jedis(url);
         jedis.auth(password);
     }
 

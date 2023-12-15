@@ -1,0 +1,1 @@
+serverLoginFilter=org.bluo.filter.server.impl.ServerLoginFilter

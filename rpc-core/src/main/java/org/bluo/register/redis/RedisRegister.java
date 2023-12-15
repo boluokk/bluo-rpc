@@ -3,7 +3,6 @@ package org.bluo.register.redis;
 import cn.hutool.core.util.ObjectUtil;
 import org.bluo.common.ServiceListWrapper;
 import org.bluo.common.ServiceWrapper;
-import org.bluo.properties.CommonProperties;
 import org.bluo.register.SimpleRegisterAbstract;
 import org.bluo.register.redis.config.RedisUtil;
 
@@ -25,10 +24,8 @@ public class RedisRegister extends SimpleRegisterAbstract {
 
     private RedisUtil redisUtil;
 
-    public RedisRegister(CommonProperties commonProperties) {
-        super(commonProperties);
-        redisUtil = new RedisUtil(commonProperties.getRedisUrl(),
-                commonProperties.getRedisPort(), commonProperties.getRedisPassword());
+    public RedisRegister(String url, String password) {
+        redisUtil = new RedisUtil(url, password);
     }
 
 

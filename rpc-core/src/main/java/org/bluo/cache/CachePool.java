@@ -1,8 +1,7 @@
 package org.bluo.cache;
 
-import org.bluo.common.RpcProtocol;
+import org.bluo.spi.ExtraLoader;
 
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -14,5 +13,7 @@ public class CachePool {
      * 缓存结果
      */
     public static final ConcurrentHashMap<String, Object> resultCache = new ConcurrentHashMap<>();
+
+    public static ExtraLoader extraLoader = new ExtraLoader();
 
 }
