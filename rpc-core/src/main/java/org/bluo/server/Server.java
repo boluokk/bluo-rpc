@@ -57,7 +57,7 @@ public class Server {
                 Runtime.getRuntime().addShutdownHook(new Thread(this::stopServer));
                 log.info("服务器启动成功");
             } else {
-                log.error("服务器启动失败");
+                log.error("服务器启动失败: {}", channelFuture.cause());
             }
         });
     }
@@ -66,6 +66,7 @@ public class Server {
         ServiceWrapper serviceWrapper = new ServiceWrapper();
         serviceWrapper.setDomain("127.0.0.1");
         serviceWrapper.setPort(serverConfig.getServerPort());
+        System.out.println(serverConfig);
         register.unRegister(serverConfig.getApplicationName(), serviceWrapper);
         serverBootstrap.group().shutdownGracefully();
         log.info("服务器关闭成功");

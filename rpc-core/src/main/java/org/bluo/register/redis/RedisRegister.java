@@ -67,12 +67,8 @@ public class RedisRegister extends SimpleRegisterAbstract {
                     iterator.remove();
                 }
             }
-            if (serviceListMapWrapper.getValue().size() == 0) {
-                RedisUtil.delete(key);
-            } else {
-                RedisUtil.setWithExpiration(key, serviceListMapWrapper,
-                        REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
-            }
+            RedisUtil.setWithExpiration(key, serviceListMapWrapper,
+                    REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION);
         }
     }
 

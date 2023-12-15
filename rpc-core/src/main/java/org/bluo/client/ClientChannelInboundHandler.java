@@ -30,6 +30,7 @@ public class ClientChannelInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         Channel channel = ctx.channel();
+        System.out.println(cause);
         channel.close().addListener(future -> {
             if (future.isSuccess()) {
                 log.info("管道关闭成功");

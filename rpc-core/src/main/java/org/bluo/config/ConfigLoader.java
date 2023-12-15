@@ -43,7 +43,6 @@ public class ConfigLoader {
         serverConfig.setRegisterAddress(PropertiesLoader.getPropertiesStrDefault(registerAddr, "127.0.0.1:6379"));
         serverConfig.setRegisterType(PropertiesLoader.getPropertiesStrDefault(registerType, "redis"));
         serverConfig.setRegisterPassword(PropertiesLoader.getPropertiesStrDefault(registerPassword, "123456"));
-        serverConfig.setPackageName(PropertiesLoader.getPropertiesStrDefault(packageName, "org.bluo.api"));
         return serverConfig;
     }
 }

@@ -27,6 +27,10 @@ public class RpcInvocation {
      */
     private Object[] params;
     /**
+     * 参数类型
+     */
+    private Class<?>[] paramTypes;
+    /**
      * 返回值
      */
     private Object result;

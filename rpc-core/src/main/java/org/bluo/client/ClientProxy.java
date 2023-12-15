@@ -28,7 +28,7 @@ public class ClientProxy implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String uuid = UUID.fastUUID().toString();
         RpcInvocation rpcInvocation = new RpcInvocation(method.getDeclaringClass().getName(),
-                method.getName(), args, null, uuid, null);
+                method.getName(), args, method.getParameterTypes(), null, uuid, null);
         // 过滤器
         ClientFilterChain.doFilter(rpcInvocation);
         // 获取服务 -> 每次都会去拿一下?

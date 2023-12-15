@@ -10,6 +10,8 @@ import org.bluo.common.RpcInvocation;
 import org.bluo.common.RpcProtocol;
 import org.bluo.exception.server.NotFoundServiceException;
 
+import java.lang.reflect.Method;
+
 import static org.bluo.cache.ClientCache.serializer;
 import static org.bluo.cache.ServerCache.services;
 
@@ -32,14 +34,16 @@ public class ServerChannelInboundHandler extends ChannelInboundHandlerAdapter {
             if (ObjectUtil.isEmpty(clsBean)) {
                 rpcInvocation.setEx(new NotFoundServiceException("未找到对应服务"));
             } else {
-                Object ret = clsBean.getClass().getMethod(rpcInvocation.getMethodName())
-                        .invoke(clsBean, rpcInvocation.getParams());
+                Method method = clsBean.getClass().getMethod(rpcInvocation.getMethodName(), rpcInvocation.getParamTypes());
+                Object ret = method.invoke(clsBean, rpcInvocation.getParams());
                 rpcInvocation.setResult(ret);
             }
         } catch (Throwable e) {
             rpcInvocation.setEx(e);
         } finally {
-            rpcProtocol.setContent(serializer.serialize(rpcInvocation));
+            byte[] data = serializer.serialize(rpcInvocation);
+            rpcProtocol.setContent(data);
+            rpcProtocol.setContentLength(data.length);
             ctx.writeAndFlush(rpcProtocol);
             ReferenceCountUtil.release(msg);
         }
