@@ -31,9 +31,9 @@ public class ClientProxy implements InvocationHandler {
                 method.getName(), args, method.getParameterTypes(), null, uuid, null);
         // 过滤器
         ClientFilterChain.doFilter(rpcInvocation);
-        // 获取服务 -> 每次都会去拿一下?
+        // 获取服务
         List<ServiceWrapper> services = ClientCache.register.getServices(serviceName);
-        // 负载均衡-路由
+        // 负载均衡
         if (ObjectUtil.isEmpty(services)) {
             log.error("未找到路由信息, 请确认服务已经注册");
             throw new Exception("未找到路由信息, 请确认服务已经注册");

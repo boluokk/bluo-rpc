@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/client")
 public class ClientController {
-    @RpcReference(serviceName = "apple")
+    @RpcReference(serviceName = "buy")
     private MessageService messageService;
 
     @RequestMapping("/test")

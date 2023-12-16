@@ -11,8 +11,9 @@
     <modules>
         <module>rpc-core</module>
         <module>api</module>
-        <module>rpc-server</module>
         <module>rpc-client</module>
+        <module>rpc-server-buy</module>
+        <module>rpc-server-shop</module>
     </modules>
 
     <properties>

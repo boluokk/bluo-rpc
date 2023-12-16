@@ -6,13 +6,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @author boluo
- * @date 2023/12/11
+ * @date 2023/12/16
  */
 
 @SpringBootApplication
 @EnableRpcServer
-public class ServerStart {
+public class ShopAppServer {
     public static void main(String[] args) {
-        SpringApplication.run(ServerStart.class, args);
+        SpringApplication.run(ShopAppServer.class, args);
     }
 }

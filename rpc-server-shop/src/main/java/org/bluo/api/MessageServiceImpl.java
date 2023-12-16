@@ -5,14 +5,13 @@ import org.springframework.stereotype.Service;
 
 /**
  * @author boluo
- * @date 2023/12/11
+ * @date 2023/12/16
  */
-
 @RpcService
 @Service
 public class MessageServiceImpl implements MessageService {
     @Override
     public String getMessage(String message) {
-        return "apple shopping";
+        return "shop service";
     }
 }
