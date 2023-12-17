@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.bluo.cache.ClientCache.clientConfig;
+import static org.bluo.cache.ClientCache.register;
+import static org.bluo.client.Client.seedMessage;
 
 /**
  * 客户端代理对象
@@ -35,7 +37,7 @@ public class ClientProxy implements InvocationHandler {
         // 前置处理
         ClientFilterChain.doBeforeFilter(rpcInvocation);
         // 获取服务
-        List<ServiceWrapper> services = ClientCache.register.getServices(serviceName);
+        List<ServiceWrapper> services = register.getServices(serviceName);
         // 负载均衡
         if (ObjectUtil.isEmpty(services)) {
             log.error("未找到路由信息, 请确认服务已经注册");
@@ -48,7 +50,7 @@ public class ClientProxy implements InvocationHandler {
         int count = 0;
         while (count++ < clientConfig.getRetryTimes()) {
             try {
-                CompletableFuture<Object> completableFuture = Client.seedMessage(select, rpcInvocation);
+                CompletableFuture<Object> completableFuture = seedMessage(select, rpcInvocation);
                 result = completableFuture.get();
                 if (ObjectUtil.isNotEmpty(((RpcInvocation) result).getE())) {
                     throw new Exception(((RpcInvocation) result).getE());

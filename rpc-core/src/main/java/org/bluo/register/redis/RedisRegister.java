@@ -1,6 +1,7 @@
 package org.bluo.register.redis;
 
 import cn.hutool.core.util.ObjectUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.bluo.common.ServiceListWrapper;
 import org.bluo.common.ServiceWrapper;
 import org.bluo.register.SimpleRegisterAbstract;
@@ -10,8 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_DEFAULT_EXPIRATION;
-import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_KEY;
+import static org.bluo.constants.RpcConstants.*;
 
 /**
  * redis注册中心
@@ -20,9 +20,12 @@ import static org.bluo.constants.RpcConstants.REDIS_SERVICE_PREFIX_KEY;
  * @date 2023/12/02
  */
 @SuppressWarnings("ConstantConditions")
+@Slf4j
 public class RedisRegister extends SimpleRegisterAbstract {
 
     private RedisUtil redisUtil;
+
+    private volatile List<ServiceWrapper> serviceList;
 
     public RedisRegister(String url, String password) {
         redisUtil = new RedisUtil(url, password);
@@ -75,7 +78,23 @@ public class RedisRegister extends SimpleRegisterAbstract {
     @Override
     public List<ServiceWrapper> getServices(String serviceName) {
         String key = REDIS_SERVICE_PREFIX_KEY + ":" + serviceName;
-        ServiceListWrapper listWrapper = RedisUtil.get(key, ServiceListWrapper.class);
-        return listWrapper.getValue();
+        if (ObjectUtil.isEmpty(serviceList)) {
+            synchronized (this) {
+                if (ObjectUtil.isEmpty(serviceList)) {
+                    serviceList = RedisUtil.get(key, ServiceListWrapper.class).getValue();
+                    new Thread(() -> {
+                        while (true) {
+                            try {
+                                Thread.sleep(REDIS_CLIENT_PREFIX_DEFAULT_EXPIRATION * 1000);
+                                serviceList = RedisUtil.get(key, ServiceListWrapper.class).getValue();
+                            } catch (InterruptedException e) {
+                                log.debug("更新服务端失败: {}", e.getMessage());
+                            }
+                        }
+                    }).start();
+                }
+            }
+        }
+        return serviceList;
     }
 }
