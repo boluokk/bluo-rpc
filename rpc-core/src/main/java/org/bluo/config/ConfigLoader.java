@@ -28,7 +28,7 @@ public class ConfigLoader {
         clientConfig.setRegisterAddress(PropertiesLoader.getPropertiesStrDefault(registerAddr, "127.0.0.1:6379"));
         clientConfig.setRegisterType(PropertiesLoader.getPropertiesStrDefault(registerType, "redis"));
         clientConfig.setRouterType(PropertiesLoader.getPropertiesStrDefault(routerType, "random"));
-        clientConfig.setRetryTimes(Integer.valueOf(PropertiesLoader.getPropertiesStrDefault(retryTime, "5")));
+        clientConfig.setRetryTimes(Integer.valueOf(PropertiesLoader.getPropertiesStrDefault(retryTime, "1")));
         clientConfig.setRetryInterval(Integer.valueOf(PropertiesLoader.getPropertiesStrDefault(retryInterval, "1000")));
         clientConfig.setRegisterPassword(PropertiesLoader.getPropertiesStrDefault(registerPassword, "123456"));
         return clientConfig;

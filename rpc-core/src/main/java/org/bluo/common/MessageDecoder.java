@@ -27,7 +27,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     protected void decode(ChannelHandlerContext ctx,
                           ByteBuf byteBuf,
                           List<Object> list) throws Exception {
-        if (byteBuf.readableBytes() >= BASE_LENGTH) {
+        if (byteBuf.readableBytes() > BASE_LENGTH) {
             // 魔数判定
             if (byteBuf.readShort() != MAGIC_NUMBER) {
                 ctx.close();

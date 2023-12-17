@@ -40,6 +40,8 @@ public class Client {
         bootstrap.group(new NioEventLoopGroup());
         bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         bootstrap.channel(NioSocketChannel.class);
+        bootstrap.option(ChannelOption.RCVBUF_ALLOCATOR,
+                new AdaptiveRecvByteBufAllocator(2048, 1024 * 10, 1024 * 10));
         bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel channel) throws Exception {

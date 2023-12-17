@@ -43,18 +43,20 @@ public class ServerChannelInboundHandler extends SimpleChannelInboundHandler<Rpc
             ServerFilterChain.doBeforeFilter(rpcInvocation);
             Object clsBean = services.get(rpcInvocation.getClassName());
             if (ObjectUtil.isEmpty(clsBean)) {
-                rpcInvocation.setEx(new NotFoundServiceException("未找到对应服务"));
+                rpcInvocation.setE(new NotFoundServiceException("未找到对应服务"));
             } else {
                 Method method = clsBean.getClass().getMethod(rpcInvocation.getMethodName(), rpcInvocation.getParamTypes());
                 // 调用方法
                 Object ret = method.invoke(clsBean, rpcInvocation.getParams());
                 rpcInvocation.setResult(ret);
+                // 后置处理
+                ServerFilterChain.doAfterFilter(rpcInvocation);
+                System.out.println(1 / 0);
             }
         } catch (Throwable e) {
-            rpcInvocation.setEx(e);
+            rpcInvocation.setResult(null);
+            rpcInvocation.setE(e);
         } finally {
-            // 后置处理
-            ServerFilterChain.doAfterFilter(rpcInvocation);
             byte[] data = serializer.serialize(rpcInvocation);
             rpcProtocol.setContent(data);
             rpcProtocol.setContentLength(data.length);

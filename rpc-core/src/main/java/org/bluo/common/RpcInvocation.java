@@ -41,5 +41,5 @@ public class RpcInvocation {
     /**
      * 服务器异常信息
      */
-    private Throwable ex;
+    private Throwable e;
 }

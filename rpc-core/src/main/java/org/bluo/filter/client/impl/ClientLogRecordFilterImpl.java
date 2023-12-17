@@ -12,6 +12,6 @@ import org.bluo.filter.client.ClientFilter;
 public class ClientLogRecordFilterImpl implements ClientFilter {
     @Override
     public void doFilter(RpcInvocation rpcInvocation) {
-        log.info("客户端日志记录: {}", rpcInvocation);
+        log.info("客户端发送: {}", rpcInvocation);
     }
 }
