@@ -14,11 +14,14 @@ import org.bluo.common.MessageEncoder;
 import org.bluo.common.ServiceWrapper;
 import org.bluo.config.ConfigLoader;
 import org.bluo.config.ServerConfig;
+import org.bluo.filter.server.ServerFilter;
+import org.bluo.filter.server.ServerFilterChain;
 import org.bluo.register.Register;
 import org.bluo.serializer.Serializer;
 import org.bluo.spi.ExtraLoader;
 
 import java.util.LinkedHashMap;
+import java.util.Set;
 
 import static org.bluo.cache.CachePool.extraLoader;
 import static org.bluo.cache.ServerCache.register;
@@ -34,11 +37,14 @@ import static org.bluo.cache.ServerCache.serverConfig;
 @Slf4j
 public class Server {
     private ServerBootstrap serverBootstrap = new ServerBootstrap();
+    private NioEventLoopGroup boot = new NioEventLoopGroup();
+    private NioEventLoopGroup work = new NioEventLoopGroup();
 
     public ChannelFuture runServer() {
         log.info("启动服务器中..");
         initConfiguration();
-        serverBootstrap.group(new NioEventLoopGroup(), new NioEventLoopGroup());
+
+        serverBootstrap.group(boot, work);
         serverBootstrap.channel(NioServerSocketChannel.class);
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override
@@ -66,9 +72,9 @@ public class Server {
         ServiceWrapper serviceWrapper = new ServiceWrapper();
         serviceWrapper.setDomain("127.0.0.1");
         serviceWrapper.setPort(serverConfig.getServerPort());
-        System.out.println(serverConfig);
         register.unRegister(serverConfig.getApplicationName(), serviceWrapper);
-        serverBootstrap.group().shutdownGracefully();
+        boot.shutdownGracefully();
+        work.shutdownGracefully();
         log.info("服务器关闭成功");
     }
 
@@ -78,9 +84,21 @@ public class Server {
             ServerConfig serverConfig = ConfigLoader.loadServerProperties();
             extraLoader.loadExtension(Serializer.class);
             extraLoader.loadExtension(Register.class);
+            extraLoader.loadExtension(ServerFilter.class);
             LinkedHashMap<String, Class> registerClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Register.class.getName());
             LinkedHashMap<String, Class> serializeClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Serializer.class.getName());
-
+            LinkedHashMap<String, Class> serverFilterClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(ServerFilter.class.getName());
+            // 过滤器
+            if (ObjectUtil.isNotEmpty(serverFilterClass)) {
+                Set<String> serverFilterKeys = serverFilterClass.keySet();
+                for (String key : serverFilterKeys) {
+                    if (key.toLowerCase().contains("after")) {
+                        ServerFilterChain.addAfterFilter((ServerFilter) serverFilterClass.get(key).newInstance());
+                    } else {
+                        ServerFilterChain.addBeforeFilter((ServerFilter) serverFilterClass.get(key).newInstance());
+                    }
+                }
+            }
             // 注册中心
             Class regCls = registerClass.get(serverConfig.getRegisterType());
             if (ObjectUtil.isEmpty(regCls)) {

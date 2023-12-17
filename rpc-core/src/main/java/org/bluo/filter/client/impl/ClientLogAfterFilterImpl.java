@@ -6,12 +6,12 @@ import org.bluo.filter.client.ClientFilter;
 
 /**
  * @author boluo
- * @date 2023/12/11
+ * @date 2023/12/17
  */
 @Slf4j
-public class ClientLogRecordFilterImpl implements ClientFilter {
+public class ClientLogAfterFilterImpl implements ClientFilter {
     @Override
     public void doFilter(RpcInvocation rpcInvocation) {
-        log.info("客户端日志记录: {}", rpcInvocation);
+        log.info("客户端接收: {}", rpcInvocation);
     }
 }

@@ -6,11 +6,12 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.bluo.cache.CachePool;
 import org.bluo.cache.ClientCache;
 import org.bluo.common.*;
 import org.bluo.config.ClientConfig;
 import org.bluo.config.ConfigLoader;
+import org.bluo.filter.client.ClientFilter;
+import org.bluo.filter.client.ClientFilterChain;
 import org.bluo.register.Register;
 import org.bluo.router.Router;
 import org.bluo.serializer.Serializer;
@@ -18,8 +19,10 @@ import org.bluo.spi.ExtraLoader;
 
 import java.net.InetSocketAddress;
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import static org.bluo.cache.CachePool.RESULT_CACHE;
 import static org.bluo.cache.CachePool.extraLoader;
 
 /**
@@ -54,10 +57,22 @@ public class Client {
             extraLoader.loadExtension(Register.class);
             extraLoader.loadExtension(Serializer.class);
             extraLoader.loadExtension(Router.class);
+            extraLoader.loadExtension(ClientFilter.class);
             LinkedHashMap<String, Class> registerClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Register.class.getName());
             LinkedHashMap<String, Class> serializeClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Serializer.class.getName());
             LinkedHashMap<String, Class> routerClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(Router.class.getName());
-
+            // 过滤器
+            LinkedHashMap<String, Class> clientFilterClass = ExtraLoader.EXTENSION_LOADER_CLASS_CACHE.get(ClientFilter.class.getName());
+            if (ObjectUtil.isNotEmpty(clientFilterClass)) {
+                Set<String> clientFilterKeys = clientFilterClass.keySet();
+                for (String key : clientFilterKeys) {
+                    if (!key.toLowerCase().contains("after")) {
+                        ClientFilterChain.addBeforeFilter((ClientFilter) clientFilterClass.get(key).newInstance());
+                    } else {
+                        ClientFilterChain.addAfterFilter((ClientFilter) clientFilterClass.get(key).newInstance());
+                    }
+                }
+            }
             // 注册中心
             Class regCls = registerClass.get(clientConfig.getRegisterType());
             if (ObjectUtil.isEmpty(regCls)) {
@@ -97,23 +112,21 @@ public class Client {
             rpcProtocol.setContentLength(body.length);
             rpcProtocol.setContent(body);
             channel = getChannelFuture(router).channel();
-            CachePool.RESULT_CACHE.put(rpcInvocation.getUuid(), future);
+            RESULT_CACHE.put(rpcInvocation.getUuid(), future);
             if (!channel.isActive()) {
                 bootstrap.group().shutdownGracefully();
                 return null;
             }
             channel.writeAndFlush(rpcProtocol).addListener((ChannelFutureListener) future1 -> {
-                if (future1.isSuccess()) {
-                    log.info(String.format("客户端发送消息: %s", rpcInvocation));
-                } else {
+                if (!future1.isSuccess()) {
                     future1.channel().close();
                     future.completeExceptionally(future1.cause());
                 }
             });
         } catch (Exception e) {
-            CachePool.RESULT_CACHE.remove(rpcInvocation.getUuid());
+            RESULT_CACHE.remove(rpcInvocation.getUuid());
             log.error(e.getMessage(), e);
-            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
         return future;
     }

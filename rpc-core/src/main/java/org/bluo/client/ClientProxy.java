@@ -29,8 +29,8 @@ public class ClientProxy implements InvocationHandler {
         String uuid = UUID.fastUUID().toString();
         RpcInvocation rpcInvocation = new RpcInvocation(method.getDeclaringClass().getName(),
                 method.getName(), args, method.getParameterTypes(), null, uuid, null);
-        // 过滤器
-        ClientFilterChain.doFilter(rpcInvocation);
+        // 前置处理
+        ClientFilterChain.doBeforeFilter(rpcInvocation);
         // 获取服务
         List<ServiceWrapper> services = ClientCache.register.getServices(serviceName);
         // 负载均衡
@@ -46,10 +46,16 @@ public class ClientProxy implements InvocationHandler {
             try {
                 CompletableFuture<Object> completableFuture = Client.seedMessage(select, rpcInvocation);
                 result = completableFuture.get();
+                // 后置处理
+                ClientFilterChain.doAfterFilter((RpcInvocation) result);
+                if (ObjectUtil.isNotEmpty(result)) {
+                    break;
+                }
             } catch (Throwable e) {
                 log.warn("发送失败：{} - {}", e.getMessage(), e.getClass());
             }
         }
+
         return ((RpcInvocation) result).getResult();
     }
 

@@ -1,1 +1,1 @@
-serverLoginFilter=org.bluo.filter.server.impl.ServerLoginFilter
+serverLoginFilter=org.bluo.filter.server.impl.ServerLogFilter
