@@ -43,7 +43,6 @@ public class Server {
     public ChannelFuture runServer() {
         log.info("启动服务器中..");
         initConfiguration();
-
         serverBootstrap.group(boot, work);
         serverBootstrap.channel(NioServerSocketChannel.class);
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
@@ -116,4 +115,9 @@ public class Server {
             log.error("加载扩展类失败", e);
         }
     }
+
+    /**
+     * 1、现获所有服务端信息
+     * 2、然后连接服务端
+     */
 }

@@ -81,8 +81,7 @@ public class Client {
                 throw new RuntimeException("注册中心类型不存在");
             }
             ClientCache.register = (Register) regCls.getConstructor(String.class, String.class)
-                    .newInstance(clientConfig.getRegisterAddress(),
-                            clientConfig.getRegisterPassword());
+                    .newInstance(clientConfig.getRegisterAddress(), clientConfig.getRegisterPassword());
             // 序列化
             Class serCls = serializeClass.get(clientConfig.getClientSerialize());
             if (ObjectUtil.isEmpty(serCls)) {
