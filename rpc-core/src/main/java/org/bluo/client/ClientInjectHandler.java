@@ -33,7 +33,6 @@ public class ClientInjectHandler implements BeanPostProcessor {
                             type.getClassLoader(),
                             new Class<?>[]{type},
                             new ClientProxy(annotation.serviceName())));
-                    field.setAccessible(false);
                 } catch (IllegalAccessException e) {
                     log.error("客户端实例化错误 {}", e.getMessage());
                 }

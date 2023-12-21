@@ -4,6 +4,8 @@ import cn.hutool.core.util.ObjectUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.bluo.common.RpcInvocation;
 import org.bluo.common.RpcProtocol;
@@ -38,6 +40,11 @@ public class ServerChannelInboundHandler extends SimpleChannelInboundHandler<Rpc
     protected void channelRead0(ChannelHandlerContext ctx, RpcInvocation rpcInvocation) throws Exception {
         RpcProtocol rpcProtocol = null;
         try {
+            //是否心跳包
+            if (rpcInvocation.isHeartBeat()) {
+                log.info("接受到心跳包");
+                return;
+            }
             rpcProtocol = new RpcProtocol();
             // 前置处理
             ServerFilterChain.doBeforeFilter(rpcInvocation);
@@ -47,8 +54,12 @@ public class ServerChannelInboundHandler extends SimpleChannelInboundHandler<Rpc
             } else {
                 Method method = clsBean.getClass().getMethod(rpcInvocation.getMethodName(), rpcInvocation.getParamTypes());
                 // 调用方法
-                Object ret = method.invoke(clsBean, rpcInvocation.getParams());
-                rpcInvocation.setResult(ret);
+                if (ctx.channel().isActive() && ctx.channel().isWritable()) {
+                    Object ret = method.invoke(clsBean, rpcInvocation.getParams());
+                    rpcInvocation.setResult(ret);
+                } else {
+                    log.info("管道不可写如数据");
+                }
                 // 后置处理
                 ServerFilterChain.doAfterFilter(rpcInvocation);
             }
@@ -60,6 +71,20 @@ public class ServerChannelInboundHandler extends SimpleChannelInboundHandler<Rpc
             rpcProtocol.setContent(data);
             rpcProtocol.setContentLength(data.length);
             ctx.writeAndFlush(rpcProtocol);
+        }
+    }
+
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleState state = ((IdleStateEvent) evt).state();
+            if (state == IdleState.READER_IDLE) {
+                log.info("长时间未收到心跳包，断开连接...");
+                ctx.close();
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
         }
     }
 }

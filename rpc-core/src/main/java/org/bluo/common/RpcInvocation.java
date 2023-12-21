@@ -42,4 +42,16 @@ public class RpcInvocation {
      * 服务器异常信息
      */
     private Throwable e;
+    /**
+     * 是否是心跳包
+     */
+    private boolean heartBeat;
+
+    public RpcInvocation(String className, String methodName, Object[] params, Class<?>[] paramTypes, String uuid) {
+        this.className = className;
+        this.methodName = methodName;
+        this.params = params;
+        this.paramTypes = paramTypes;
+        this.uuid = uuid;
+    }
 }

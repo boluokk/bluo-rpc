@@ -7,6 +7,7 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.bluo.cache.ServerCache;
 import org.bluo.common.MessageDecoder;
@@ -20,12 +21,17 @@ import org.bluo.register.Register;
 import org.bluo.serializer.Serializer;
 import org.bluo.spi.ExtraLoader;
 
+import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.bluo.cache.CachePool.extraLoader;
 import static org.bluo.cache.ServerCache.register;
 import static org.bluo.cache.ServerCache.serverConfig;
+import static org.bluo.constants.RpcConstants.DEFAULT_HEARTBEAT_INTERVAL;
 
 
 /**
@@ -39,6 +45,7 @@ public class Server {
     private ServerBootstrap serverBootstrap = new ServerBootstrap();
     private NioEventLoopGroup boot = new NioEventLoopGroup();
     private NioEventLoopGroup work = new NioEventLoopGroup();
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
     public ChannelFuture runServer() {
         log.info("启动服务器中..");
@@ -48,9 +55,11 @@ public class Server {
         serverBootstrap.childHandler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel channel) throws Exception {
-                channel.pipeline().addLast(new MessageDecoder(ServerCache.serializer));
-                channel.pipeline().addLast(new MessageEncoder());
-                channel.pipeline().addLast(new ServerChannelInboundHandler());
+                channel.pipeline()
+                        .addLast(new IdleStateHandler(30, 0, 0, TimeUnit.SECONDS))
+                        .addLast(new MessageDecoder(ServerCache.serializer))
+                        .addLast(new MessageEncoder())
+                        .addLast(new ServerChannelInboundHandler());
             }
         });
         return serverBootstrap.bind(serverConfig.getServerPort()).addListener(channelFuture -> {
@@ -58,7 +67,9 @@ public class Server {
                 ServiceWrapper serviceWrapper = new ServiceWrapper();
                 serviceWrapper.setPort(serverConfig.getServerPort());
                 serviceWrapper.setDomain("127.0.0.1");
-                register.register(serverConfig.getApplicationName(), serviceWrapper);
+                executorService.scheduleAtFixedRate(() -> {
+                    register.register(serverConfig.getApplicationName(), serviceWrapper);
+                }, 0, DEFAULT_HEARTBEAT_INTERVAL, TimeUnit.SECONDS);
                 Runtime.getRuntime().addShutdownHook(new Thread(this::stopServer));
                 log.info("服务器启动成功");
             } else {
@@ -103,7 +114,9 @@ public class Server {
             if (ObjectUtil.isEmpty(regCls)) {
                 throw new RuntimeException("注册中心类型不存在");
             }
-            register = (Register) regCls.newInstance();
+            Constructor constructor = regCls.getConstructor(String.class, String.class);
+            register = (Register) constructor.newInstance(serverConfig.getRegisterAddress(),
+                    serverConfig.getRegisterPassword());
             // 序列化
             Class serCls = serializeClass.get(serverConfig.getServerSerialize());
             if (ObjectUtil.isEmpty(serCls)) {
@@ -115,9 +128,4 @@ public class Server {
             log.error("加载扩展类失败", e);
         }
     }
-
-    /**
-     * 1、现获所有服务端信息
-     * 2、然后连接服务端
-     */
 }

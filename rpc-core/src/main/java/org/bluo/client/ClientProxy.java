@@ -33,7 +33,7 @@ public class ClientProxy implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String uuid = UUID.fastUUID().toString();
         RpcInvocation rpcInvocation = new RpcInvocation(method.getDeclaringClass().getName(),
-                method.getName(), args, method.getParameterTypes(), null, uuid, null);
+                method.getName(), args, method.getParameterTypes(), uuid);
         // 前置处理
         ClientFilterChain.doBeforeFilter(rpcInvocation);
         // 获取服务
@@ -63,7 +63,6 @@ public class ClientProxy implements InvocationHandler {
                 log.warn("发送失败：{} - {}", e.getMessage(), e.getClass());
             }
         }
-
         return ((RpcInvocation) result).getResult();
     }
 
