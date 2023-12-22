@@ -1,6 +1,8 @@
 package org.bluo.common;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -11,6 +13,8 @@ import java.io.Serializable;
  * @date 2023/12/02
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ServiceWrapper implements Serializable {
     private String domain;
     private int port;

@@ -4,7 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.bluo.common.ServiceWrapper;
 import org.bluo.register.SimpleRegisterAbstract;
-import org.bluo.register.redis.config.RedisUtil;
+import org.bluo.register.redis.util.RedisUtil;
 
 import java.util.List;
 import java.util.concurrent.Executors;

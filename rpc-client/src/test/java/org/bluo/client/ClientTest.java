@@ -2,7 +2,7 @@ package org.bluo.client;
 
 import org.bluo.client.controller.ClientController;
 import org.bluo.common.ServiceWrapper;
-import org.bluo.register.redis.config.RedisUtil;
+import org.bluo.register.redis.util.RedisUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 

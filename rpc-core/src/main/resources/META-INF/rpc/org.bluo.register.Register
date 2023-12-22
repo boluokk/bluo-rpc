@@ -1,1 +1,2 @@
 redis=org.bluo.register.redis.RedisRegister
+nacos=org.bluo.register.nacos.NacosRegister

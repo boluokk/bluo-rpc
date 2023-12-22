@@ -1,4 +1,4 @@
-package org.bluo.register.redis.config;
+package org.bluo.register.redis.util;
 
 import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,9 @@ public class RedisUtil {
     }
 
     public <T> List<T> zSetRangeRetObj(String key, long start, long end, Class<T> clazz) {
-        return zSetRange(key, start, end).stream().map(s -> JSONUtil.toBean(s, clazz)).collect(Collectors.toList());
+        return zSetRange(key, start, end).stream()
+                .map(s -> JSONUtil.toBean(s, clazz))
+                .collect(Collectors.toList());
     }
 
     public Set<String> zSetRange(String key, long start, long end) {
