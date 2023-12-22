@@ -23,7 +23,7 @@ import static org.bluo.constants.RpcConstants.*;
 @Slf4j
 public class RedisRegister extends SimpleRegisterAbstract {
 
-    private volatile List<ServiceWrapper> serviceList;
+    private List<ServiceWrapper> serviceList;
     private RedisUtil redisUtil;
 
     private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);

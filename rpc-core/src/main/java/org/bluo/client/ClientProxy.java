@@ -4,7 +4,6 @@ import cn.hutool.core.lang.UUID;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.bluo.cache.ClientCache;
 import org.bluo.common.RpcInvocation;
 import org.bluo.common.ServiceWrapper;
 import org.bluo.filter.client.ClientFilterChain;
@@ -14,8 +13,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static org.bluo.cache.ClientCache.clientConfig;
-import static org.bluo.cache.ClientCache.register;
+import static org.bluo.cache.ClientCache.*;
 import static org.bluo.client.Client.seedMessage;
 
 /**
@@ -43,7 +41,7 @@ public class ClientProxy implements InvocationHandler {
             log.error("未找到路由信息, 请确认服务已经注册");
             throw new Exception("未找到路由信息, 请确认服务已经注册");
         }
-        ServiceWrapper select = ClientCache.router.select(services);
+        ServiceWrapper select = router.select(services);
         Object result = null;
         long intervalTime = clientConfig.getRetryInterval();
         int retryTimes = clientConfig.getRetryTimes();
