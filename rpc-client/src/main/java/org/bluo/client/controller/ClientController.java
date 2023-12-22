@@ -17,7 +17,7 @@ public class ClientController {
     @RpcReference(serviceName = "buy")
     private MessageService messageService;
 
-    @RpcReference(serviceName = "buy")
+    @RpcReference(serviceName = "shop")
     private OtherService otherService;
 
     @RequestMapping("/test")
