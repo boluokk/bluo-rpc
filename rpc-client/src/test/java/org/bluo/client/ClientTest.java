@@ -1,10 +1,7 @@
 package org.bluo.client;
 
-import org.bluo.client.controller.ClientController;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import javax.annotation.Resource;
 
 /**
  * @author boluo
@@ -12,8 +9,6 @@ import javax.annotation.Resource;
  */
 @SpringBootTest
 public class ClientTest {
-    @Resource
-    ClientController clientController;
 
     @Test
     public void test() {

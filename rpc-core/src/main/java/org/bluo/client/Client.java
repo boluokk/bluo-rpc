@@ -34,10 +34,11 @@ import static org.bluo.cache.CachePool.extraLoader;
 @Slf4j
 public class Client {
     private static Bootstrap bootstrap = new Bootstrap();
+    private static final NioEventLoopGroup work = new NioEventLoopGroup(10);
 
     static {
         initConfiguration();
-        bootstrap.group(new NioEventLoopGroup());
+        bootstrap.group(work);
         bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         bootstrap.channel(NioSocketChannel.class);
         bootstrap.option(ChannelOption.RCVBUF_ALLOCATOR,

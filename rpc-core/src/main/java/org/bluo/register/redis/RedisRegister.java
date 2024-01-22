@@ -26,7 +26,7 @@ public class RedisRegister extends SimpleRegisterAbstract {
     private List<ServiceWrapper> serviceList;
     private RedisUtil redisUtil;
 
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
 
     public RedisRegister(String address, String password) {
@@ -53,17 +53,15 @@ public class RedisRegister extends SimpleRegisterAbstract {
         if (ObjectUtil.isNull(serviceList)) {
             synchronized (this) {
                 if (ObjectUtil.isNull(serviceList)) {
-
                     serviceList = redisUtil.zSetRangeRetObj(key, 0,
                             System.currentTimeMillis() + REDIS_GET_INTERVAL_MILLISECONDS,
                             ServiceWrapper.class);
 
                     executorService.scheduleAtFixedRate(() -> {
                         long intervalGetTime = System.currentTimeMillis();
-                        List<ServiceWrapper> serviceWrappers = redisUtil.zSetRangeRetObj(key,
+                        serviceList = redisUtil.zSetRangeRetObj(key,
                                 System.currentTimeMillis() - REDIS_GET_INTERVAL_MILLISECONDS,
                                 intervalGetTime + REDIS_GET_INTERVAL_MILLISECONDS, ServiceWrapper.class);
-                        serviceList = serviceWrappers;
                     }, 0, REDIS_GET_INTERVAL, TimeUnit.SECONDS);
 
                 }

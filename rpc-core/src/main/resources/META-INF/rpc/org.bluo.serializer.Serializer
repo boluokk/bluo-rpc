@@ -1,1 +1,3 @@
 jackson=org.bluo.serializer.jackson.JacksonSerializer
+hessian=org.bluo.serializer.hessian.HessianSerializer
+gson=org.bluo.serializer.gson.GsonSerializer

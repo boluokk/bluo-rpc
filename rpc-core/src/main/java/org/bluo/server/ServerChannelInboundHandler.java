@@ -29,7 +29,6 @@ public class ServerChannelInboundHandler extends SimpleChannelInboundHandler<Rpc
         Channel channel = ctx.channel();
         channel.close().addListener(future -> {
             if (future.isSuccess()) {
-                log.info("管道关闭成功");
             } else {
                 log.error("管道关闭失败", future.cause());
             }
@@ -80,7 +79,6 @@ public class ServerChannelInboundHandler extends SimpleChannelInboundHandler<Rpc
         if (evt instanceof IdleStateEvent) {
             IdleState state = ((IdleStateEvent) evt).state();
             if (state == IdleState.READER_IDLE) {
-                log.info("长时间未收到心跳包，断开连接...");
                 ctx.close();
             }
         } else {

@@ -12,6 +12,6 @@ import org.springframework.stereotype.Service;
 public class MessageServiceImpl implements MessageService {
     @Override
     public String getMessage(String message) {
-        return "shop service";
+        return "shop service by other";
     }
 }

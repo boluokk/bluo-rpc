@@ -1,5 +1,5 @@
 server:
-  port: 56444
+  port: 56449
 spring:
   main:
     banner-mode: off

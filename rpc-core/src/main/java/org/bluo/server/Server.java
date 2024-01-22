@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -43,8 +44,8 @@ import static org.bluo.constants.RpcConstants.DEFAULT_HEARTBEAT_INTERVAL;
 @Slf4j
 public class Server {
     private ServerBootstrap serverBootstrap = new ServerBootstrap();
-    private NioEventLoopGroup boot = new NioEventLoopGroup();
-    private NioEventLoopGroup work = new NioEventLoopGroup();
+    private NioEventLoopGroup boot = new NioEventLoopGroup(2);
+    private NioEventLoopGroup work = new NioEventLoopGroup(10);
     private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
     public ChannelFuture runServer() {

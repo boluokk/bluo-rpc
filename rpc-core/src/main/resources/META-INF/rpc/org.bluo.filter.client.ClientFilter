@@ -1,2 +1,2 @@
-clientLogRecordFilterImpl=org.bluo.filter.client.impl.ClientLogRecordFilterImpl
-ClientLogAfterFilterImpl=org.bluo.filter.client.impl.ClientLogAfterFilterImpl
+#clientLogRecordFilterImpl=org.bluo.filter.client.impl.ClientLogRecordFilterImpl
+#ClientLogAfterFilterImpl=org.bluo.filter.client.impl.ClientLogAfterFilterImpl
