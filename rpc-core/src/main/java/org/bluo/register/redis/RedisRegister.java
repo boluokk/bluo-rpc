@@ -51,21 +51,22 @@ public class RedisRegister extends SimpleRegisterAbstract {
     public List<ServiceWrapper> getServices(String serviceName) {
         String key = REDIS_SERVICE_PREFIX_KEY.concat(serviceName);
         if (ObjectUtil.isNull(serviceList)) {
-            synchronized (this) {
-                if (ObjectUtil.isNull(serviceList)) {
-                    serviceList = redisUtil.zSetRangeRetObj(key, 0,
-                            System.currentTimeMillis() + REDIS_GET_INTERVAL_MILLISECONDS,
-                            ServiceWrapper.class);
+            // 获取服务
+            serviceList = redisUtil.zSetRangeRetObj(
+                    key,
+                    0,
+                    System.currentTimeMillis() + REDIS_GET_INTERVAL_MILLISECONDS,
+                    ServiceWrapper.class);
+            // 定时获取服务
+            executorService.scheduleAtFixedRate(() -> {
+                long intervalGetTime = System.currentTimeMillis();
+                serviceList = redisUtil.zSetRangeRetObj(
+                        key,
+                        System.currentTimeMillis() - REDIS_GET_INTERVAL_MILLISECONDS,
+                        intervalGetTime + REDIS_GET_INTERVAL_MILLISECONDS,
+                        ServiceWrapper.class);
+            }, 0, REDIS_GET_INTERVAL, TimeUnit.SECONDS);
 
-                    executorService.scheduleAtFixedRate(() -> {
-                        long intervalGetTime = System.currentTimeMillis();
-                        serviceList = redisUtil.zSetRangeRetObj(key,
-                                System.currentTimeMillis() - REDIS_GET_INTERVAL_MILLISECONDS,
-                                intervalGetTime + REDIS_GET_INTERVAL_MILLISECONDS, ServiceWrapper.class);
-                    }, 0, REDIS_GET_INTERVAL, TimeUnit.SECONDS);
-
-                }
-            }
         }
         return serviceList;
     }
